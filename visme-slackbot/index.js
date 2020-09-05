@@ -8,6 +8,7 @@ const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
 
 const chatbot = require('./chatbot');
+const faq = require('./faq');
 
 const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 const slackEvents = createEventAdapter(slackSigningSecret);
@@ -25,8 +26,14 @@ slackEvents.on('message', (event) => {
     return;
   }
   console.log(`message.im: ${event.text}`);
-  const channelId = event.channel;
-  web.chat.postMessage({ channel: channelId, text: "HHAHAHA" });
+  faq.ask(event.text, (err, answer) => {
+    const channelId = event.channel;
+    if (err || answer.answer == 'No good match found in KB.') {
+      web.chat.postMessage({ channel: channelId, text: "HHAHAHA" });
+    } else {
+      web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
+    }
+  });
 });
 
 (async () => {

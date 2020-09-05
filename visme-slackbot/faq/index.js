@@ -21,7 +21,7 @@ function ask(question, callback) {
       body += d;
     });
     res.on('end', () => {
-      callback(null, JSON.parse(body));
+      callback(null, JSON.parse(body).answers[0]);
     });
   });
 
