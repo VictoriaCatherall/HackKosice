@@ -1,7 +1,7 @@
 // example from
 // https://github.com/slackapi/node-slack-sdk
 
-import { WebClient } from '@slack/web-api';
+const { WebClient } = require('@slack/web-api');
 
 // An access token (from your Slack app or custom integration - xoxp, xoxb)
 const token = process.env.SLACK_TOKEN;
