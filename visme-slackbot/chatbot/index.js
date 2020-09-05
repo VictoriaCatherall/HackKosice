@@ -22,8 +22,15 @@ function getVerbs(text) {
   return doc.verbs();
 }
 
+const commas = [ 'from', 'to' ];
+
+function makeRegExpOr(arr) {
+  return new RegExp('\\b(' + arr.join('|') + ')\\b', 'ig');
+}
+
 function getDates(text) {
-  const doc = nlp(text);
+  const preprocessed = text.replace(makeRegExpOr(commas), ', ');
+  const doc = nlp(preprocessed);
   return doc.dates();
 }
 
