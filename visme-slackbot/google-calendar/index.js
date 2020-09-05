@@ -101,7 +101,7 @@ function returnEvent(event) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  * @param {String} name The name of the event.
  */
-function getEventsByNameAdv(auth, name, callback) {
+function getEventsByName(auth, name, callback) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
@@ -128,7 +128,7 @@ function getEventsByNameAdv(auth, name, callback) {
  * @param {Date} from The first time for the time period.
  * @param {Date} from The final time for the time period.
  */
-function getEventsAdv(auth, from, to, callback) {
+function getEvents(auth, from, to, callback) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
