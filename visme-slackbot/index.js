@@ -26,7 +26,10 @@ slackEvents.on('message', (event) => {
   }
   console.log(`message.im: ${event.text}`);
   const channelId = event.channel;
-  web.chat.postMessage({ channel: channelId, text: chatbot.getNouns(event.text).map(n => n.text).join(', ') });
+  const responses = chatbot.getNouns(event.text).map(n => n.text);
+  for (const response of responses) {
+    web.chat.postMessage({ channel: channelId, text: response });
+  }
 });
 
 (async () => {
