@@ -90,11 +90,12 @@ function listEvents(auth) {
 
 /**
  * Formats the output nicely.
- * @param {event? idk} event The event to be printed.
+ * @param {object? idk} event The event to be printed.
  */
 function printEvent(event) {
   const start = event.start.dateTime || event.start.date;
-  console.log(`${start} - ${event.summary}`);
+  const url = event.htmlLink;
+  console.log(`${start} - ${event.summary} - ${url}`);
 }
 
 /**
