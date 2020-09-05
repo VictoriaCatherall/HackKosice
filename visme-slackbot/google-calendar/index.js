@@ -92,3 +92,14 @@ function listEvents(auth) {
     }
   });
 }
+
+function getEventsByName(name) {
+}
+
+function getEvents(from, to) {
+}
+
+module.exports = {
+  getEventsByName,
+  getEvents
+};
