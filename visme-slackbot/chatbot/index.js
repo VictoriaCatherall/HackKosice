@@ -1,6 +1,8 @@
 const nlp = require('compromise');
+const number = require('compromise-number');
 const dates = require('compromise-dates');
 
+nlp.extend(number);
 nlp.extend(dates);
 
 function getNouns(text) {
