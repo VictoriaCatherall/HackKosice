@@ -90,12 +90,11 @@ function listEvents(auth) {
 
 /**
  * Formats the output nicely.
- * @param {} event The event to be printed.
+ * @param {event? idk} event The event to be printed.
  */
 function printEvent(event) {
   const start = event.start.dateTime || event.start.date;
   console.log(`${start} - ${event.summary}`);
-  console.log(typeof(event));
 }
 
 /**
@@ -118,7 +117,9 @@ function getEventsByName(auth, name) {
       console.log("No events");
       return;
     } else {
-      events.map((event, i) => if (event.summary == name) printEvent(event));
+      events.map((event, i) => {
+        if (event.summary == name) printEvent(event)
+      });
     }
   });
 }
