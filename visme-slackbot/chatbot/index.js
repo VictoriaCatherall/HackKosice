@@ -28,7 +28,7 @@ function getSubjects(text) {
   return nouns.forEach(noun => console.log(noun.adjectives()));
 }
 
-const commas = [ 'from', 'to', 'until', 'till', 'on', 'at' ];
+const commas = [ 'from', 'to', 'until', 'till', 'on', 'at', 'and', 'between' ];
 
 function makeRegExpOr(arr) {
   return new RegExp('\\b(' + arr.join('|') + ')\\b', 'ig');
@@ -69,6 +69,6 @@ module.exports = {
 };
 
 if (require.main == module) {
-  console.log(getSubjects(process.argv[2]));
+  console.log(toJSDates(getDates(process.argv[2])));
 }
 

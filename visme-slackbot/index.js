@@ -5,6 +5,7 @@
 // https://slack.dev/node-slack-sdk/events-api
 
 
+const fs = require('fs');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
 
@@ -43,9 +44,19 @@ slackEvents.on('message', (event) => {
         web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
       } else if (dates.length == 1) {
         let day = chatbot.dayBounds(dates[0]);
-        calendar.getEvents(day[0], day[1]);
+        fs.readFile('./credentials.json', (err, content) => {
+          if (err) return console.log('Error loading client secret file:', err);
+          calendar.authorize(JSON.parse(content), (a) => {
+            calendar.getEvents(a, day[0], day[1]);
+          });
+        });
       } else if (dates.length == 2) {
-        calendar.getEvents(dates[0], dates[1]);
+        fs.readFile('./credentials.json', (err, content) => {
+          if (err) return console.log('Error loading client secret file:', err);
+          calendar.authorize(JSON.parse(content), (a) => {
+            calendar.getEvents(a, dates[0], dates[1]);
+          });
+        });
       } else {
         web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
       }
