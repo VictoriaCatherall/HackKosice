@@ -6,6 +6,9 @@
 
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
+
+const chatbot = require('./chatbot');
+
 const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 const slackEvents = createEventAdapter(slackSigningSecret);
 const port = process.env.PORT || 3000;
@@ -21,10 +24,9 @@ slackEvents.on('message', (event) => {
   {
     return;
   }
-  console.log('message.im');
-  console.log(event);
+  console.log(`message.im: ${event.text}`);
   const channelId = event.channel;
-  web.chat.postMessage({ channel: channelId, text: event.text });
+  web.chat.postMessage({ channel: channelId, text: chatbot.getNouns(event.text).map(n => n.text).join(', ') });
 });
 
 (async () => {
