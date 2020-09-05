@@ -150,23 +150,8 @@ function getEvents(auth, from, to) {
   });
 }
 
-
-// HOW TO RUN CODE ATM
-// just change where it says 'here'.
-// i've put in an 'auth' which is passed in as a.
-fs.readFile('./credentials.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
-  authorize(JSON.parse(content), (a) => {
-
-    // here
-
-//     listEvents(a)
-//     getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"))
-//     getEventsByName(a, "Visma Yoga");
-  });
-});
-
 module.exports = {
   getEventsByName,
-  getEvents
+  getEvents,
+  authorize
 };
