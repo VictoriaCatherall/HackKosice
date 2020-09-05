@@ -52,6 +52,7 @@ slackEvents.on('message', (event) => {
     if (err || answer.answer == 'No good match found in KB.') {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
+          web.chat.postMessage({ channel: channelId, text: "Error loading client secret file."});
           return console.log('Error loading client secret file:', err);
         }
         calendar.authorize(JSON.parse(content), (auth) => {
@@ -63,10 +64,12 @@ slackEvents.on('message', (event) => {
             } else if (dates.length == 2) {
               calendar.getEvents(auth, dates[0], dates[1], r => process_result(channelId, r));
             } else {
-              web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
+              web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
             }
           } else {
             const eventNames = chatbot;
+            // Comment out below if you want to do more processing :)
+            web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
           }
         });
       });
