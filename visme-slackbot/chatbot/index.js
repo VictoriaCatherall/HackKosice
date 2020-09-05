@@ -1,6 +1,7 @@
 const nlp = require('compromise');
 const numbers = require('compromise-numbers');
 const dates = require('compromise-dates');
+const SugarDate = require('sugar-date').Date;
 
 nlp.extend(numbers);
 nlp.extend(dates);
@@ -26,6 +27,12 @@ function getDates(text) {
   return doc.dates();
 }
 
+function toJSDates(dates) {
+  const datesTexts = dates.text().split(/, /g);
+  const result = datesTexts.map(dateText => SugarDate.create(dateText));
+  return result;
+}
+
 module.exports = {
   getNouns,
   getVerbs,
@@ -33,5 +40,5 @@ module.exports = {
 };
 
 if (require.main == module) {
-  console.log(nlp(process.argv[2]).nouns().adjectives().json());
+  console.log(toJSDates(getDates(process.argv[2])));
 }
