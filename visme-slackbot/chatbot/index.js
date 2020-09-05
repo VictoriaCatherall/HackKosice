@@ -22,7 +22,7 @@ function getVerbs(text) {
   return doc.verbs();
 }
 
-const commas = [ 'from', 'to' ];
+const commas = [ 'to' ];
 
 function makeRegExpOr(arr) {
   return new RegExp('\\b(' + arr.join('|') + ')\\b', 'ig');
