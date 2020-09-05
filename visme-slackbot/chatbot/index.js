@@ -24,7 +24,8 @@ function getVerbs(text) {
 
 function getSubjects(text) {
   const nouns = getNouns(text);
-  return `${nouns.adjectives().text()} ${nouns.text()}`;
+  // return `${nouns.adjectives().text()} ${nouns.text()}`;
+  return nouns.forEach(noun => console.log(noun.adjectives()));
 }
 
 const commas = [ 'from', 'to', 'until', 'till', 'on', 'at' ];

@@ -154,7 +154,7 @@ function getEvents(auth, from, to) {
 // HOW TO RUN CODE ATM
 // just change where it says 'here'.
 // i've put in an 'auth' which is passed in as a.
-fs.readFile('credentials.json', (err, content) => {
+fs.readFile('./credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
   authorize(JSON.parse(content), (a) => {
 
