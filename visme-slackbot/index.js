@@ -21,7 +21,11 @@ slackEvents.on('message', (event) => {
   if (event.channel_type != 'im') {
     return;
   }
-  if (typeof event.bot_id != 'undefined')
+  if (typeof event.bot_id != 'undefined' || typeof event.text == 'undefined')
+  {
+    return;
+  }
+  if (typeof event.text.length == 0)
   {
     return;
   }
