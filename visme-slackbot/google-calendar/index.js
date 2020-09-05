@@ -9,13 +9,6 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 // time.
 const TOKEN_PATH = 'token.json';
 
-// Load client secrets from a local file.
-fs.readFile('credentials.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
-  // Authorize a client with credentials, then call the Google Calendar API.
-  authorize(JSON.parse(content), listEvents);
-});
-
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
@@ -93,11 +86,86 @@ function listEvents(auth) {
   });
 }
 
-function getEventsByName(name) {
+
+/**
+ * Lists up to 10 events with an EXACTLY specified name.
+ * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
+ * @param {String} name The name of the event.
+ */
+function getEventsByName(auth, name) {
+  const calendar = google.calendar({version: 'v3', auth});
+  calendar.events.list({
+    calendarId: 'primary',
+    maxResults: 10,
+  }, (err, res) => {
+    if (err) {
+      console.log("Error occurred: " + err);
+      return
+    }
+    const events = res.data.items;
+    if (events.length == 0) {
+      console.log("No events")
+      return
+    } else {
+      events.map((event, i) => {
+        if (event.summary == name) {
+          const start = event.start.dateTime || event.start.date;
+          console.log(`${start} - ${event.summary}`);
+        }
+      });
+    }
+  });
 }
 
-function getEvents(from, to) {
+
+/**
+ * Lists up to 10 events within a specified time period.
+ * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
+ * @param {Date} from The first time for the time period.
+ * @param {Date} from The final time for the time period.
+ */
+function getEvents(auth, from, to) {
+  const calendar = google.calendar({version: 'v3', auth});
+  calendar.events.list({
+    calendarId: 'primary',
+    timeMin: from.toISOString(),
+    timeMax: to.toISOString(),
+    maxResults: 10,
+  }, (err, res) => {
+    if (err) {
+      console.log("Error occurred: " + err);
+      return
+    }
+    const events = res.data.items;
+    if (events.length == 0) {
+      console.log("No events")
+      return
+    } else {
+      events.map((event, i) => {
+        const start = event.start.dateTime || event.start.date;
+        console.log(`${start} - ${event.summary}`);
+      });
+    }
+  });
 }
+
+
+// HOW TO RUN CODE ATM
+// just change where it says 'here'.
+// i've put in an 'auth' which is passed in as a.
+fs.readFile('credentials.json', (err, content) => {
+  if (err) return console.log('Error loading client secret file:', err);
+  authorize(JSON.parse(content), (a) => {
+
+    // here
+
+    // listEvents(a)
+    // getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"))
+    getEventsByName(a, "Breakfast Meet up");
+  });
+});
+
+
 
 module.exports = {
   getEventsByName,
