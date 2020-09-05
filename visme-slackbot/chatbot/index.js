@@ -10,7 +10,7 @@ function getVerbs(text) {
   return doc.verbs().json();
 }
 
-function getDate(text) {
+function getDates(text) {
   const doc = nlp(text);
   return doc.dates().json();
 }
@@ -18,5 +18,5 @@ function getDate(text) {
 module.exports = {
   getNouns,
   getVerbs,
-  getDate
+  getDates
 };
