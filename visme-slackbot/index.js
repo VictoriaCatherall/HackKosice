@@ -36,27 +36,26 @@ slackEvents.on('message', (event) => {
   faq.ask(event.text, (err, answer) => {
     const channelId = event.channel;
     if (err || answer.answer == 'No good match found in KB.') {
-      let dates = chatbot.toJSDates(chatbot.getDates(event.text));
-      if (dates.length == 0) {
-        web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
-      } else if (dates.length == 1) {
-        let day = chatbot.dayBounds(dates[0]);
-        fs.readFile('./credentials.json', (err, content) => {
-          if (err) return console.log('Error loading client secret file:', err);
-          calendar.authorize(JSON.parse(content), (a) => {
-            calendar.getEvents(a, day[0], day[1]);
-          });
+      fs.readFile('./credentials.json', (err, content) => {
+        if (err) {
+          return console.log('Error loading client secret file:', err);
+        }
+        calendar.authorize(JSON.parse(content), (auth) => {
+          const dates = chatbot.toJSDates(chatbot.getDates(event.text));
+          if (dates.length) {
+            if (dates.length == 1) {
+              let day = chatbot.dayBounds(dates[0]);
+              calendar.getEvents(auth, day[0], day[1]);
+            } else if (dates.length == 2) {
+              calendar.getEvents(auth, dates[0], dates[1]);
+            } else {
+              web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
+            }
+          } else {
+            const eventNames = chatbot;
+          }
         });
-      } else if (dates.length == 2) {
-        fs.readFile('./credentials.json', (err, content) => {
-          if (err) return console.log('Error loading client secret file:', err);
-          calendar.authorize(JSON.parse(content), (a) => {
-            calendar.getEvents(a, dates[0], dates[1]);
-          });
-        });
-      } else {
-        web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
-      }
+      });
     } else {
       web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
     }
