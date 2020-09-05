@@ -12,6 +12,9 @@
   "dependencies": {
     "@slack/events-api": "^2.3.4",
     "@slack/web-api": "^5.11.0",
+    "compromise": "^13.3.2",
+    "compromise-dates": "^1.0.0",
+    "compromise-numbers": "^1.0.0",
     "googleapis": "^39.2.0"
   }
 }
