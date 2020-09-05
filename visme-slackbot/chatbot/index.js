@@ -40,6 +40,12 @@ function toJSDates(dates) {
   return result;
 }
 
+function previousMidnight(jsDate) {
+}
+
+function succeedingMidnight(jsDate) {
+}
+
 module.exports = {
   getNouns,
   getVerbs,
