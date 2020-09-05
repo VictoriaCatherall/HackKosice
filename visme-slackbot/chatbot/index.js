@@ -23,7 +23,8 @@ function getVerbs(text) {
 }
 
 function getSubjects(text) {
-  return getNouns(text).map(noun => noun.adjectives().out('array') + noun.text());
+  const nouns = getNouns(text);
+  return `${nouns.adjectives().text()} ${nouns.text()}`;
 }
 
 const commas = [ 'from', 'to', 'until', 'till', 'on', 'at' ];
