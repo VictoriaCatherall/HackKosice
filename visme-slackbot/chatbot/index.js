@@ -13,17 +13,17 @@ nlp.extend((Doc, world) => {
 
 function getNouns(text) {
   const doc = nlp(text);
-  return doc.nouns().json();
+  return doc.nouns();
 }
 
 function getVerbs(text) {
   const doc = nlp(text);
-  return doc.verbs().json();
+  return doc.verbs();
 }
 
 function getDates(text) {
   const doc = nlp(text);
-  return doc.dates().json();
+  return doc.dates();
 }
 
 module.exports = {
