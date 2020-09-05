@@ -29,7 +29,7 @@ slackEvents.on('message', (event) => {
   faq.ask(event.text, (err, answer) => {
     const channelId = event.channel;
     if (err || answer.answer == 'No good match found in KB.') {
-      web.chat.postMessage({ channel: channelId, text: "HHAHAHA" });
+      web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
     } else {
       web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
     }
