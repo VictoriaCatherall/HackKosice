@@ -1,3 +1,5 @@
 <php
-echo json_encode("shut up")
+echo json_encode({
+  "text": "shut up"
+})
 ?>
