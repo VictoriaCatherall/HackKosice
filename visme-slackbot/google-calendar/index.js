@@ -99,7 +99,6 @@ function printEvent(event) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  * @param {String} name The name of the event.
  */
-
 function getEventsByName(auth, name) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
