@@ -76,7 +76,7 @@ function listEvents(auth) {
     const events = res.data.items;
     if (events.length) {
       console.log('Upcoming 10 events:');
-      events.map((event, i) => printEvent(event));
+      events.map(printEvent);
     } else {
       console.log('No upcoming events found.');
     }
@@ -100,10 +100,13 @@ function printEvent(event) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  * @param {String} name The name of the event.
  */
+
 function getEventsByName(auth, name) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
+    q: name,
+    maxResults: 10,
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
@@ -114,17 +117,11 @@ function getEventsByName(auth, name) {
       console.log("No events");
       return;
     } else {
-      var counter = 0;
-      for (var i = 0; i < events.length; i++) {
-        if (counter >= 10) break;
-        if (events[i].summary == name) {
-          printEvent(events[i]);
-          counter++;
-        }
-      }
+      events.map(printEvent);
     }
   });
 }
+
 
 /**
  * Lists up to 10 events within a specified time period.
@@ -150,7 +147,7 @@ function getEvents(auth, from, to) {
       console.log("No events");
       return;
     } else {
-      events.map((event, i) => printEvent);
+      events.map(printEvent);
     }
   });
 }
@@ -165,9 +162,9 @@ fs.readFile('credentials.json', (err, content) => {
 
     // here
 
-    // listEvents(a)
-    // getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"))
-    getEventsByName(a, "Visma Yoga");
+//     listEvents(a)
+//     getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"))
+//     getEventsByName(a, "Visma Yoga");
   });
 });
 
