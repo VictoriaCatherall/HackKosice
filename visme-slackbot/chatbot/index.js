@@ -28,7 +28,7 @@ function getDates(text) {
 }
 
 function toJSDates(dates) {
-  const datesTexts = dates.text().split(/, /g);
+  const datesTexts = dates.out('array').map(dateText => dateText.replace(/\W+$/, ''));
   const result = datesTexts.map(dateText => SugarDate.create(dateText));
   return result;
 }
