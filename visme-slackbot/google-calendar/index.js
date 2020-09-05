@@ -7,7 +7,7 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = 'token.json';
+const TOKEN_PATH = '../token.json';
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -86,12 +86,12 @@ function listEvents(auth) {
 //----------------------------------------------- my code is below
 /**
  * Formats the output nicely.
- * @param {object? idk} event The event to be printed.
+ * @param {Event?} event The event to be printed.
  */
-function printEvent(event) {
+function returnEvent(event) {
   const start = event.start.dateTime || event.start.date;
   const url = event.htmlLink;
-  console.log(`${start} - ${event.summary} - <${url}|Link>\n`);
+  return {'start': start, 'title': event.summary, 'url': url};
 }
 
 /**
@@ -99,7 +99,7 @@ function printEvent(event) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  * @param {String} name The name of the event.
  */
-function getEventsByName(auth, name) {
+function getEventsByNameAdv(auth, name, callback) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
@@ -115,10 +115,19 @@ function getEventsByName(auth, name) {
       console.log("No events");
       return;
     } else {
-      events.map(printEvent);
+      return callback(events.map(returnEvent));
     }
   });
 }
+// Cleaner version
+function getEventsByName(name, callback) {
+  fs.readFile('../credentials.json', (err, content) => {
+    if (err) return console.log("Error loading client secret file: ", err);
+    authorize(JSON.parse(content), (a) => getEventsByNameAdv(a, name, callback));
+  })
+}
+// How to use: getEventsByName(NAME, (result) => { rest of program });
+// result will be an object with values {'start': ..., 'title':..., 'url':...}
 
 
 /**
@@ -127,7 +136,7 @@ function getEventsByName(auth, name) {
  * @param {Date} from The first time for the time period.
  * @param {Date} from The final time for the time period.
  */
-function getEvents(auth, from, to) {
+function getEventsAdv(auth, from, to, callback) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
@@ -145,24 +154,33 @@ function getEvents(auth, from, to) {
       console.log("No events");
       return;
     } else {
-      events.map(printEvent);
+      return callback(events.map(returnEvent));
     }
   });
 }
+// Cleaner version
+function getEvents(from, to, callback) {
+  fs.readFile('../credentials.json', (err, content) => {
+    if (err) return console.log("Error loading client secret file: ", err);
+    authorize(JSON.parse(content), (a) => getEventsAdv(a, from, to, callback));
+  })
+}
+// How to use: getEvents(FROM, TO, (result) => { rest of program });
+// result will be an object with values {'start': ..., 'title':..., 'url':...}
 
 
 // HOW TO RUN CODE ATM
 // just change where it says 'here'.
 // i've put in an 'auth' which is passed in as a.
-fs.readFile('./credentials.json', (err, content) => {
+fs.readFile('../credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
   authorize(JSON.parse(content), (a) => {
 
     // here
 
 //     listEvents(a)
-//     getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"))
-//     getEventsByName(a, "Visma Yoga");
+//    getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"), console.log)
+//    getEventsByName(a, "Visma Yoga", console.log);
   });
 });
 
