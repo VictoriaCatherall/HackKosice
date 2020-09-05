@@ -67,6 +67,6 @@ module.exports = {
 };
 
 if (require.main == module) {
-  console.log(getSubjects('I would like to attend the Visma traditional breakfast'));
+  console.log(getSubjects(process.argv[2]));
 }
 
