@@ -1,7 +1,1 @@
-<html>
-<body>
-
-shut up
-
-</body>
-</html>
+json_encode("shut up")
