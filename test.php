@@ -1,1 +1,3 @@
-json_encode("shut up")
+<php
+echo json_encode("shut up")
+?>
