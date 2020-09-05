@@ -83,7 +83,9 @@ function listEvents(auth) {
   });
 }
 
-//----------------------------------------------- my code is below
+
+
+
 /**
  * Formats the output nicely.
  * @param {Event?} event The event to be printed.
@@ -119,16 +121,6 @@ function getEventsByNameAdv(auth, name, callback) {
     }
   });
 }
-// Cleaner version
-function getEventsByName(name, callback) {
-  fs.readFile('../credentials.json', (err, content) => {
-    if (err) return console.log("Error loading client secret file: ", err);
-    authorize(JSON.parse(content), (a) => getEventsByNameAdv(a, name, callback));
-  })
-}
-// How to use: getEventsByName(NAME, (result) => { rest of program });
-// result will be an object with values {'start': ..., 'title':..., 'url':...}
-
 
 /**
  * Lists up to 10 events within a specified time period.
@@ -158,15 +150,6 @@ function getEventsAdv(auth, from, to, callback) {
     }
   });
 }
-// Cleaner version
-function getEvents(from, to, callback) {
-  fs.readFile('../credentials.json', (err, content) => {
-    if (err) return console.log("Error loading client secret file: ", err);
-    authorize(JSON.parse(content), (a) => getEventsAdv(a, from, to, callback));
-  })
-}
-// How to use: getEvents(FROM, TO, (result) => { rest of program });
-// result will be an object with values {'start': ..., 'title':..., 'url':...}
 
 module.exports = {
   getEventsByName,
