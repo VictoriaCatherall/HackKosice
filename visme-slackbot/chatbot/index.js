@@ -22,6 +22,10 @@ function getVerbs(text) {
   return doc.verbs();
 }
 
+function getSubjects(text) {
+  return getNouns(text).map(noun => noun.adjectives().out('array') + noun.text());
+}
+
 const commas = [ 'from', 'to', 'until', 'till' ];
 
 function makeRegExpOr(arr) {
@@ -62,6 +66,6 @@ module.exports = {
 };
 
 if (require.main == module) {
-  console.log(dayBounds(toJSDates(getDates(process.argv[2]))[0]));
+  console.log(getSubjects('I would like to attend the Visma traditional breakfast'));
 }
 
