@@ -64,6 +64,7 @@ module.exports = {
   getNouns,
   getVerbs,
   getDates,
+  toJSDates,
   dayBounds
 };
 
