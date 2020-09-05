@@ -86,6 +86,17 @@ function listEvents(auth) {
   });
 }
 
+//----------------------------------------------- my code is below
+
+/**
+ * Formats the output nicely.
+ * @param {} event The event to be printed.
+ */
+function printEvent(event) {
+  const start = event.start.dateTime || event.start.date;
+  console.log(`${start} - ${event.summary}`);
+  console.log(typeof(event));
+}
 
 /**
  * Lists up to 10 events with an EXACTLY specified name.
@@ -100,23 +111,17 @@ function getEventsByName(auth, name) {
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
-      return
+      return;
     }
     const events = res.data.items;
     if (events.length == 0) {
-      console.log("No events")
-      return
+      console.log("No events");
+      return;
     } else {
-      events.map((event, i) => {
-        if (event.summary == name) {
-          const start = event.start.dateTime || event.start.date;
-          console.log(`${start} - ${event.summary}`);
-        }
-      });
+      events.map((event, i) => if (event.summary == name) printEvent(event));
     }
   });
 }
-
 
 /**
  * Lists up to 10 events within a specified time period.
@@ -134,17 +139,14 @@ function getEvents(auth, from, to) {
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
-      return
+      return;
     }
     const events = res.data.items;
     if (events.length == 0) {
-      console.log("No events")
-      return
+      console.log("No events");
+      return;
     } else {
-      events.map((event, i) => {
-        const start = event.start.dateTime || event.start.date;
-        console.log(`${start} - ${event.summary}`);
-      });
+      events.map((event, i) => printEvent);
     }
   });
 }
@@ -164,8 +166,6 @@ fs.readFile('credentials.json', (err, content) => {
     getEventsByName(a, "Breakfast Meet up");
   });
 });
-
-
 
 module.exports = {
   getEventsByName,
