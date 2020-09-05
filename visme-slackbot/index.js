@@ -26,21 +26,7 @@ slackEvents.on('message', (event) => {
   }
   console.log(`message.im: ${event.text}`);
   const channelId = event.channel;
-  web.chat.postMessage({ channel: channelId, text: "NOUNS" });
-  const nouns = chatbot.getNouns(event.text).map(n => n.text);
-  for (const noun of nouns) {
-    web.chat.postMessage({ channel: channelId, text: noun });
-  }
-  web.chat.postMessage({ channel: channelId, text: "VERBS" });
-  const verbs = chatbot.getVerbs(event.text).map(n => n.text);
-  for (const verb of verbs) {
-    web.chat.postMessage({ channel: channelId, text: verb });
-  }
-  web.chat.postMessage({ channel: channelId, text: "DATES" });
-  const dates = chatbot.getDates(event.text).map(n => JSON.stringify(n));
-  for (const date of dates) {
-    web.chat.postMessage({ channel: channelId, text: date });
-  }
+  web.chat.postMessage({ channel: channelId, text: "HAHAHAHAHAHAHAHAHAH" });
 });
 
 (async () => {
