@@ -110,14 +110,14 @@ function getEventsByName(auth, name, callback) {
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
-      return;
+      return callback({'valid': false, 'data': "An error occured."});
     }
     const events = res.data.items;
     if (events.length == 0) {
       console.log("No events");
-      return;
+      return callback({'valid': false, 'data': "No events."});
     } else {
-      return callback(events.map(returnEvent));
+      return callback({'valid': true, 'data': events.map(returnEvent)});
     }
   });
 }
@@ -139,14 +139,14 @@ function getEvents(auth, from, to, callback) {
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
-      return;
+      return callback({'valid': false, 'data': "An error occured."});
     }
     const events = res.data.items;
     if (events.length == 0) {
       console.log("No events");
-      return;
+      return callback({'valid': false, 'data': "No events."});
     } else {
-      return callback(events.map(returnEvent));
+      return callback({'valid': true, 'data': events.map(returnEvent)});
     }
   });
 }
