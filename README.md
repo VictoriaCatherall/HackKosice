@@ -1,3 +1,6 @@
-# Hack Kosice 3: _Hack Kosice_
+# Hack Kosice 3: _The Third Instalment_
 
-# NODE
+# NODE Slackbot
+
+https://github.com/slackapi/node-slack-sdk
+
