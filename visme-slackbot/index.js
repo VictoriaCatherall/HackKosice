@@ -5,6 +5,7 @@
 // https://slack.dev/node-slack-sdk/events-api
 
 
+const app = require('express')();
 const fs = require('fs');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
@@ -18,6 +19,7 @@ const slackEvents = createEventAdapter(slackSigningSecret);
 const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
+app.use('/slack/events', slackEvents.expressMiddleware());
 
 // Convert result from google-calendar to posted messages
 function process_result(channelId, result) {
@@ -79,8 +81,6 @@ slackEvents.on('message', (event) => {
   });
 });
 
-(async () => {
-  const server = await slackEvents.start(port);
-  console.log(`Listening for events on ${server.address().port}`);
-})();
+app.listen(port);
+console.log(`Listening for events on ${port}`);
 
