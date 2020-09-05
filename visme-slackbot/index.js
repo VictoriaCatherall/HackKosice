@@ -5,17 +5,26 @@
 // https://slack.dev/node-slack-sdk/events-api
 
 const { createEventAdapter } = require('@slack/events-api');
+const { WebClient } = require('@slack/web-api');
 const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 const slackEvents = createEventAdapter(slackSigningSecret);
 const port = process.env.PORT || 3000;
+const token = process.env.SLACK_TOKEN;
+const web = new WebClient(token);
 
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
   if (event.channel_type != 'im') {
     return;
   }
+  if (typeof event.bot_id != 'undefined')
+  {
+    return;
+  }
   console.log('message.im');
   console.log(event);
+  const channelId = event.channel;
+  web.chat.postMessage({ channel: channelId, text: event.text });
 });
 
 (async () => {
