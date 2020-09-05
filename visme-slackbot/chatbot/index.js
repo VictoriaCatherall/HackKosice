@@ -26,7 +26,7 @@ function getSubjects(text) {
   return getNouns(text).map(noun => noun.adjectives().out('array') + noun.text());
 }
 
-const commas = [ 'from', 'to', 'until', 'till' ];
+const commas = [ 'from', 'to', 'until', 'till', 'on', 'at' ];
 
 function makeRegExpOr(arr) {
   return new RegExp('\\b(' + arr.join('|') + ')\\b', 'ig');
