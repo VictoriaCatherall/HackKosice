@@ -76,10 +76,7 @@ function listEvents(auth) {
     const events = res.data.items;
     if (events.length) {
       console.log('Upcoming 10 events:');
-      events.map((event, i) => {
-        const start = event.start.dateTime || event.start.date;
-        console.log(`${start} - ${event.summary}`);
-      });
+      events.map((event, i) => printEvent(event));
     } else {
       console.log('No upcoming events found.');
     }
@@ -95,7 +92,7 @@ function listEvents(auth) {
 function printEvent(event) {
   const start = event.start.dateTime || event.start.date;
   const url = event.htmlLink;
-  console.log(`${start} - ${event.summary} - ${url}`);
+  console.log(`${start} - ${event.summary} - ${url}\n`);
 }
 
 /**
@@ -107,7 +104,6 @@ function getEventsByName(auth, name) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
-    maxResults: 10,
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
@@ -118,9 +114,14 @@ function getEventsByName(auth, name) {
       console.log("No events");
       return;
     } else {
-      events.map((event, i) => {
-        if (event.summary == name) printEvent(event)
-      });
+      var counter = 0;
+      for (var i = 0; i < events.length; i++) {
+        if (counter >= 10) break;
+        if (events[i].summary == name) {
+          printEvent(events[i]);
+          counter++;
+        }
+      }
     }
   });
 }
@@ -138,6 +139,7 @@ function getEvents(auth, from, to) {
     timeMin: from.toISOString(),
     timeMax: to.toISOString(),
     maxResults: 10,
+    singleEvents: true,
   }, (err, res) => {
     if (err) {
       console.log("Error occurred: " + err);
@@ -165,7 +167,7 @@ fs.readFile('credentials.json', (err, content) => {
 
     // listEvents(a)
     // getEvents(a, new Date("2020-09-07T17:30:00+01:00"), new Date("2020-09-10T17:30:00+01:01"))
-    getEventsByName(a, "Breakfast Meet up");
+    getEventsByName(a, "Visma Yoga");
   });
 });
 
