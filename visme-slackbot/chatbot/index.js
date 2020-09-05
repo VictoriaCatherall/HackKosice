@@ -40,18 +40,28 @@ function toJSDates(dates) {
   return result;
 }
 
+SugarDate.extend();
+
 function previousMidnight(jsDate) {
+  return new Date(jsDate).reset('day');
 }
 
 function succeedingMidnight(jsDate) {
+  return new Date(jsDate).addDays(1).reset('day');
+}
+
+function dayBounds(jsDate) {
+  return [ previousMidnight(jsDate), succeedingMidnight(jsDate) ];
 }
 
 module.exports = {
   getNouns,
   getVerbs,
-  getDates
+  getDates,
+  dayBounds
 };
 
 if (require.main == module) {
-  console.log(toJSDates(getDates(process.argv[2])));
+  console.log(dayBounds(toJSDates(getDates(process.argv[2]))[0]));
 }
+
