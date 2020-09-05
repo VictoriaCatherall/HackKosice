@@ -71,7 +71,7 @@ slackEvents.on('message', (event) => {
           } else {
             const eventNames = chatbot;
             // Comment out below if you want to do more processing :)
-            web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
+            web.chat.postMessage({ channel: channelId, text: "No dates!" });
           }
         });
       });
