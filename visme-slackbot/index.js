@@ -19,7 +19,6 @@ const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 
-
 // Convert result from google-calendar to posted messages
 function process_result(channelId, result) {
   if (result.valid) {
@@ -27,13 +26,12 @@ function process_result(channelId, result) {
     (async () => {
       await web.chat.postMessage({ channel: channelId, text: "Here are the results: " });
       result.data.map((r) => web.chat.postMessage({ channel: channelId, text: `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>` }));
-  //                               change this for better results in slack ^  you have 'start', 'title', 'url'
+      //                               change this for better results in slack ^  you have 'start', 'title', 'url'
     })();
   } else {
     web.chat.postMessage({ channel: channelId, text: result.data });
   }
 }
-
 
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
@@ -51,31 +49,27 @@ slackEvents.on('message', (event) => {
   console.log(`message.im: ${event.text}`);
   faq.ask(event.text, (err, answer) => {
     const channelId = event.channel;
-    if (err) {
-      web.chat.postMessage({ channel: channelId, text: "Error at faq: " + err });
-    } else if (answer.answer == 'No good match found in KB.') {
-      let dates = chatbot.toJSDates(chatbot.getDates(event.text));
-      if (dates.length == 0) {
-        //see if name else
-        web.chat.postMessage({ channel: channelId, text: "No dates specified." });
-      } else if (dates.length == 1) {
-        let day = chatbot.dayBounds(dates[0]);
-        fs.readFile('./credentials.json', (err, content) => {
-          if (err) return console.log('Error loading client secret file:', err);
-          calendar.authorize(JSON.parse(content), (a) => {
-            calendar.getEvents(a, day[0], day[1], (r) => process_result(channelId, r));
-          });
+    if (err || answer.answer == 'No good match found in KB.') {
+      fs.readFile('./credentials.json', (err, content) => {
+        if (err) {
+          return console.log('Error loading client secret file:', err);
+        }
+        calendar.authorize(JSON.parse(content), (auth) => {
+          const dates = chatbot.toJSDates(chatbot.getDates(event.text));
+          if (dates.length) {
+            if (dates.length == 1) {
+              let day = chatbot.dayBounds(dates[0]);
+              calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
+            } else if (dates.length == 2) {
+              calendar.getEvents(auth, dates[0], dates[1], r => process_result(channelId, r));
+            } else {
+              web.chat.postMessage({ channel: channelId, text: "<https://www.youtube.com/watch?v=dQw4w9WgXcQ|HHAHAHA>" });
+            }
+          } else {
+            const eventNames = chatbot;
+          }
         });
-      } else if (dates.length == 2) {
-        fs.readFile('./credentials.json', (err, content) => {
-          if (err) return console.log('Error loading client secret file:', err);
-          calendar.authorize(JSON.parse(content), (a) => {
-            calendar.getEvents(a, dates[0], dates[1], (r) => process_result(channelId, r));
-          });
-        });
-      } else {
-        web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
-      }
+      });
     } else {
       web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
     }
