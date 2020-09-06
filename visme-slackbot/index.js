@@ -106,7 +106,7 @@ function ask(text, callback) {
         });
       });
     } else {
-      callback(answer.score + answer.answer);
+      callback(answer.answer);
     }
   });
 }
