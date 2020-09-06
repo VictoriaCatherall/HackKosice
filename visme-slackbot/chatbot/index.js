@@ -23,9 +23,15 @@ function getVerbs(text) {
 }
 
 function getSubjects(text) {
-  const nouns = getNouns(text);
+  const adjectives = nlp(text).nouns().adjectives().out('offsets').map(r => r.terms).flat();
+  const nouns = nlp(text).nouns().out('offsets').map(r => r.terms).flat();
   // return `${nouns.adjectives().text()} ${nouns.text()}`;
-  return nouns.forEach(noun => console.log(noun.adjectives()));
+
+  const flatTerms = [adjectives, nouns].flat();
+  flatTerms.sort((a, b) => a.offset.start - b.offset.start);
+
+  const nounPhrases = [];
+  return nounPhrases;
 }
 
 const commas = [ 'from', 'to', 'until', 'till', 'on', 'at', 'and', 'between' ];
@@ -69,6 +75,6 @@ module.exports = {
 };
 
 if (require.main == module) {
-  console.log(toJSDates(getDates(process.argv[2])));
+  console.log(JSON.stringify(getSubjects(process.argv[2]), null, 2));
 }
 
