@@ -26,9 +26,9 @@ app.use('/webhook', require('./webhook')(ask));
 // Convert result from google-calendar to posted messages
 function processResult(callback, result) {
   if (result.valid) {
-    callback(result.data.map(r => `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>`).join(''));
+    callback({text: result.data.map(r => `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>`).join('')});
   } else {
-    callback(result.data);
+    callback({text: result.data});
   }
 }
 
@@ -78,7 +78,7 @@ function ask(text, callback) {
     if (err || !answer) {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
-          callback("Error loading client secret file.");
+          callback({text: "Error loading client secret file."});
           return console.log('Error loading client secret file:', err);
         }
         calendar.authorize(JSON.parse(content), (auth) => {
@@ -96,7 +96,7 @@ function ask(text, callback) {
                   calendar.getEvents(auth, d0, d1, r => processResult(callback, r)))
               );
             } else {
-              callback("Too many dates! I don't know what to do.");
+              callback({text: "Too many dates! I don't know what to do."});
             }
           } else {
             const eventNames = chatbot.getSubjects(text);
@@ -126,7 +126,7 @@ slackEvents.on('message', (event) => {
   }
   console.log(`message.im: ${event.text}`);
   const channelId = event.channel;
-  ask(event.text, answer => web.chat.postMessage({ channel: channelId, text: answer }));
+  ask(event.text, answer => web.chat.postMessage({ ...answer, channel: channelId }));
 });
 
 app.listen(port);
