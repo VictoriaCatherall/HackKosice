@@ -23,43 +23,44 @@ app.use('/slack/actions', slackInteractions.requestListener());
 app.use(express.json());
 app.use('/webhook', require('./webhook')(ask));
 
-// Convert result from google-calendar to posted messages
-function processResult(callback, result) {
-  if (result.valid) {
-    callback({text: result.data.map(r => `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>`).join('')});
-  } else {
-    callback({text: result.data});
+const dateSelectBlocks = [
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": "Date not recognised. Please select it from this calendar:"
+    },
+    "accessory": {
+      "type": "datepicker",
+      "action_id": "datepickeraction",
+      "placeholder": {
+        "type": "plain_text",
+        "text": "Select a date",
+      }
+    }
   }
+];
+
+// Convert result from google-calendar to posted messages
+function postEvents(callback, events) {
+  callback({text: events.map(r => `${r.summary}, at ${r.start.dateTime}   <${r.htmlLink}|Add to calendar>`).join('')});
+}
+
+function getEventsOutputHandler(callback) {
+  return (err, events) => {
+    if (err) {
+      callback({text: 'BIG ERROR probaly with google calendar api'});
+    } else {
+      if (events.length) {
+        postEvents(events);
+      } else {
+        callback({text: 'No events found for this date range.'});
+      }
+    }
+  };
 }
 
 let new_date = null;
-function check_validity(date, channelId, text, callback) {
-  if (isNaN(date.getTime())) {
-    new_date = callback;
-    // date is not valid
-    web.chat.postMessage({
-      channel: channelId,
-      blocks: [{
-        "type": "section",
-        "text": {
-          "type": "plain_text",
-          "text": text + "date not recognised. please select it from this calendar:"
-        },
-        "accessory": {
-          "type": "datepicker",
-          "action_id": "datepickeraction",
-          "placeholder": {
-            "type": "plain_text",
-            "text": "Select a date",
-          }
-        }
-      }]
-    });
-  } else {
-    return callback(date)
-  }
-}
-
 // listen for datepicker changing
 slackInteractions.action({}, (payload, respond) => {
   const a = payload.actions[0]
@@ -85,23 +86,25 @@ function ask(text, callback) {
           const dates = chatbot.toJSDates(chatbot.getDates(text));
           if (dates.length) {
             if (dates.length == 1) {
-              check_validity(dates[0], channelId, "", (d) => {
+              if (isNaN(dates[0].getTime())) {
+                callback({text: 'Date not recognised', blocks: dateSelectBlocks});
+              } else {
                 let day = chatbot.dayBounds(d);
-                calendar.getEvents(auth, day[0], day[1], r => processResult(callback, r));
-              });
-
+                calendar.getEvents(auth, day[0], day[1], getEventsOutputHandler(callback));
+              }
             } else if (dates.length == 2) {
-              check_validity(dates[0], channelId, "first ", (d0) =>
-                check_validity(dates[1], channelId, "second ", (d1) =>
-                  calendar.getEvents(auth, d0, d1, r => processResult(callback, r)))
-              );
+              if (isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
+                callback({text: 'Date not recognised', blocks: dateSelectBlocks});
+              } else {
+                calendar.getEvents(auth, dates[0], dates[1], getEventsOutputHandler(callback));
+              }
             } else {
               callback({text: "Too many dates! I don't know what to do."});
             }
           } else {
             const eventNames = chatbot.getSubjects(text);
             // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
-            calendar.getEventsByName(auth, eventNames[0], result => processResult(callback, result));
+            calendar.getEventsByName(auth, eventNames[0], getEventsOutputHandler(callback));
           }
         });
       });

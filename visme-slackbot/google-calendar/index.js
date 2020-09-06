@@ -85,16 +85,6 @@ function listEvents(auth) {
 
 
 /**
- * Formats the output nicely.
- * @param {Event?} event The event to be printed.
- */
-function returnEvent(event) {
-  const start = event.start.dateTime || event.start.date;
-  const url = event.htmlLink;
-  return {'start': start, 'title': event.summary, 'url': url};
-}
-
-/**
  * Lists up to 10 events with an EXACTLY specified name.
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  * @param {String} name The name of the event.
@@ -107,16 +97,11 @@ function getEventsByName(auth, name, callback) {
     maxResults: 10,
   }, (err, res) => {
     if (err) {
-      console.log("Error occurred: " + err);
-      return callback({'valid': false, 'data': "An error occured."});
+      console.error('Google Calendar error:', err);
+      return callback(err);
     }
     const events = res.data.items;
-    if (events.length == 0) {
-      console.log("No events");
-      return callback({'valid': false, 'data': "No events."});
-    } else {
-      return callback({'valid': true, 'data': events.map(returnEvent)});
-    }
+    return callback(null, events);
   });
 }
 
@@ -136,16 +121,11 @@ function getEvents(auth, from, to, callback) {
     singleEvents: true,
   }, (err, res) => {
     if (err) {
-      console.log("Error occurred: " + err);
-      return callback({'valid': false, 'data': "An error occured."});
+      console.error('Google Calendar error:', err);
+      return callback(err);
     }
     const events = res.data.items;
-    if (events.length == 0) {
-      console.log("No events");
-      return callback({'valid': false, 'data': "No events."});
-    } else {
-      return callback({'valid': true, 'data': events.map(returnEvent)});
-    }
+    return callback(null, events);
   });
 }
 
@@ -154,3 +134,4 @@ module.exports = {
   getEvents,
   authorize
 };
+
