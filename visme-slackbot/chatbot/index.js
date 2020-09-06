@@ -25,7 +25,6 @@ function getVerbs(text) {
 function getSubjects(text) {
   const adjectives = nlp(text).nouns().adjectives().out('offsets').map(r => r.terms).flat();
   const nouns = nlp(text).nouns().out('offsets').map(r => r.terms).flat();
-  // return `${nouns.adjectives().text()} ${nouns.text()}`;
 
   const flatTerms = [adjectives, nouns].flat();
   flatTerms.sort((a, b) => a.offset.start - b.offset.start);
