@@ -21,7 +21,6 @@ const web = new WebClient(token);
 app.use('/slack/events', slackEvents.expressMiddleware());
 app.use('/slack/actions', slackInteractions.requestListener());
 app.use(express.json());
-app.use('/webhook', require('./webhook')(ask));
 
 const dateSelectBlocks = [
   {
@@ -46,36 +45,42 @@ function formatEvents(events) {
   return events.map(r => `${r.summary}, at ${r.start.dateTime || r.start.date}   <${r.htmlLink}|Add to calendar>`).join('\n');
 }
 
-// listen for datepicker changing
-slackInteractions.action({}, (payload, respond) => {
-  const action = payload.actions[0];
-  if (payload.type == "block_actions" && action.action_id == "datepickeraction") {
-    const [from, to] = chatbot.dayBounds(action.selected_date);
-    getEvents(auth, from, to, (err, events) => {
-      if (err) {
-        console.error('Error in the calendar', err);
-      } else {
-        if (events.length) {
-          respond({text: formatEvents(events)});
+fs.readFile('./credentials.json', (err, content) => {
+  if (err) {
+    postMessage({text: "Error loading client secret file."});
+    return console.error('Error loading client secret file:', err);
+  }
+  calendar.authorize(JSON.parse(content), (auth) => {
+
+    // listen for datepicker changing
+    slackInteractions.action({}, (payload, respond) => {
+      try {
+        const action = payload.actions[0];
+        if (payload.type == "block_actions" && action.action_id == "datepickeraction") {
+          const [from, to] = chatbot.dayBounds(action.selected_date);
+          calendar.getEvents(auth, from, to, (err, events) => {
+            if (err) {
+              console.error('Error in the calendar', err);
+            } else {
+              if (events.length) {
+                respond({text: formatEvents(events)});
+              } else {
+                respond({text: 'No events found for this date range.'});
+              }
+            }
+          });
         } else {
-          respond({text: 'No events found for this date range.'});
+          console.error("Something updated..?");
         }
+      } catch (e) {
+        console.error(e);
+        respond({text: 'Sorry about this, our datepicker seems to be broken... could you try asking again with a different phrasing?'});
       }
     });
-  } else {
-    console.error("Something updated..?");
-  }
-})
 
-function ask(text, postMessage) {
-  faq.ask(text, (err, answer) => {
-    if (err || !answer) {
-      fs.readFile('./credentials.json', (err, content) => {
-        if (err) {
-          postMessage({text: "Error loading client secret file."});
-          return console.error('Error loading client secret file:', err);
-        }
-        calendar.authorize(JSON.parse(content), (auth) => {
+    function ask(text, postMessage) {
+      faq.ask(text, (err, answer) => {
+        if (err || !answer) {
           const dates = chatbot.toJSDates(chatbot.getDates(text));
           const eventNames = chatbot.getSubjects(text);
           if (dates.length) {
@@ -131,31 +136,32 @@ function ask(text, postMessage) {
           } else {
             postMessage({text: 'What are you trying to do ....'});
           }
-        });
+        } else {
+          postMessage({mrkdwn: true, text: answer.answer});
+        }
       });
-    } else {
-      postMessage({mrkdwn: true, text: answer.answer});
     }
+
+    // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
+    slackEvents.on('message', (event) => {
+      if (event.channel_type != 'im') {
+        return;
+      }
+      if (typeof event.bot_id != 'undefined' || typeof event.text == 'undefined')
+      {
+        return;
+      }
+      if (typeof event.text.length == 0)
+      {
+        return;
+      }
+      console.log(`message.im: ${event.text}`);
+      const channelId = event.channel;
+      ask(event.text, answer => web.chat.postMessage({ ...answer, channel: channelId }));
+    });
+
+    app.use('/webhook', require('./webhook')(ask));
+    app.listen(port);
+    console.log(`Listening for events on ${port}`);
   });
-}
-
-// Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
-slackEvents.on('message', (event) => {
-  if (event.channel_type != 'im') {
-    return;
-  }
-  if (typeof event.bot_id != 'undefined' || typeof event.text == 'undefined')
-  {
-    return;
-  }
-  if (typeof event.text.length == 0)
-  {
-    return;
-  }
-  console.log(`message.im: ${event.text}`);
-  const channelId = event.channel;
-  ask(event.text, answer => web.chat.postMessage({ ...answer, channel: channelId }));
 });
-
-app.listen(port);
-console.log(`Listening for events on ${port}`);
