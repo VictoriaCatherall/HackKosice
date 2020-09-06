@@ -56,7 +56,7 @@ function check_validity(date, channelId) {
 
 function ask(text, callback) {
   faq.ask(text, (err, answer) => {
-    if (err || answer.answer == 'No good match found in KB.') {
+    if (err || !answer) {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
           callback("Error loading client secret file.");
@@ -90,7 +90,7 @@ function ask(text, callback) {
         });
       });
     } else {
-      callback(answer.score + answer.answer);
+      callback(answer.answer);
     }
   });
 }
