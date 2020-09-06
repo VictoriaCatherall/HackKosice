@@ -5,7 +5,8 @@
 // https://slack.dev/node-slack-sdk/events-api
 
 
-const app = require('express')();
+const express = require('express');
+const app = express();
 const fs = require('fs');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
@@ -20,6 +21,7 @@ const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 app.use('/slack/events', slackEvents.expressMiddleware());
+app.use(express.json());
 app.use('/webhook', require('./webhook')(ask));
 
 // Convert result from google-calendar to posted messages
