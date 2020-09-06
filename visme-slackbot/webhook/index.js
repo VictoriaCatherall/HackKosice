@@ -5,14 +5,14 @@ module.exports = (ask) => {
     var question = clump["intent"]["query"];
     console.log(`Got webhook question ${question}`);
     ask(question, function (answer) {
-      console.log(`Answering webhook with ${answer}`);
+      console.log(`Answering webhook with ${answer.text}`);
       res.status(200);
       var msg = {
         'prompt': {
           'override': true,
           'firstSimple': {
-            'speech': answer,
-            'text': answer
+            'speech': answer.text,
+            'text': answer.text
           }
         }
       };
