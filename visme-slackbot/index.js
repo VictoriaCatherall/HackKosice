@@ -1,5 +1,8 @@
-const app = require('express')();
+
+const express = require('express');
+const app = express();
 const fs = require('fs');
+
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
 const { createMessageAdapter } = require('@slack/interactive-messages');
@@ -14,6 +17,7 @@ const slackInteractions = createMessageAdapter(slackSigningSecret);
 const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
+
 app.use('/slack/events', slackEvents.expressMiddleware());
 app.use('/slack/actions', slackInteractions.requestListener());
 app.use(express.json());
@@ -105,7 +109,7 @@ function ask(text, callback) {
       callback(answer.score + answer.answer);
     }
   });
-});
+}
 
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
