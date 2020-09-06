@@ -20,6 +20,7 @@ const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 app.use('/slack/events', slackEvents.expressMiddleware());
+app.use('/webhook', require('./webhook'));
 
 // Convert result from google-calendar to posted messages
 function process_result(channelId, result) {
