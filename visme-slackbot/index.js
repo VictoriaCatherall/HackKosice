@@ -66,14 +66,13 @@ function ask(text, callback) {
           const dates = chatbot.toJSDates(chatbot.getDates(text));
           if (dates.length) {
             if (dates.length == 1) {
-
-              check_validity(dates[0], channelId);
-              console.log("returned");
-
-//               let day = chatbot.dayBounds(dates[0]);
-//               calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
+              // check_validity(dates[0], channelId);
+              // console.log("returned");
+              // callback('would have called check_validity');
+              let day = chatbot.dayBounds(dates[0]);
+              calendar.getEvents(auth, day[0], day[1], r => process_result(callback, r));
             } else if (dates.length == 2) {
-              calendar.getEvents(auth, dates[0], dates[1], r => process_result(channelId, r));
+              calendar.getEvents(auth, dates[0], dates[1], r => process_result(callback, r));
             } else {
               callback("Too many dates! I don't know what to do.");
             }
