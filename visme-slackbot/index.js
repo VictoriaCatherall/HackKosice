@@ -1,12 +1,4 @@
-// example from
-// https://github.com/slackapi/node-slack-sdk
-// cut
-
-// https://slack.dev/node-slack-sdk/events-api
-
-
-const express = require('express');
-const app = express();
+const app = require('express')();
 const fs = require('fs');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
@@ -77,22 +69,8 @@ slackInteractions.action({}, (payload, respond) => {
 })
 
 
-// Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
-slackEvents.on('message', (event) => {
-  if (event.channel_type != 'im') {
-    return;
-  }
-  if (typeof event.bot_id != 'undefined' || typeof event.text == 'undefined')
-  {
-    return;
-  }
-  if (typeof event.text.length == 0)
-  {
-    return;
-  }
-  console.log(`message.im: ${event.text}`);
-  faq.ask(event.text, (err, answer) => {
-    const channelId = event.channel;
+function ask(text, callback) {
+  faq.ask(text, (err, answer) => {
     if (err || !answer) {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
@@ -124,7 +102,7 @@ slackEvents.on('message', (event) => {
         });
       });
     } else {
-      web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
+      callback(answer.score + answer.answer);
     }
   });
 });
@@ -149,4 +127,3 @@ slackEvents.on('message', (event) => {
 
 app.listen(port);
 console.log(`Listening for events on ${port}`);
-
