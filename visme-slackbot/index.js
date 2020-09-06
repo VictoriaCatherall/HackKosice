@@ -97,9 +97,14 @@ slackEvents.on('message', (event) => {
               web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
             }
           } else {
-            const eventNames = chatbot;
-            // Comment out below if you want to do more processing :)
-            web.chat.postMessage({ channel: channelId, text: "No dates!" });
+            const eventNames = chatbot.getSubjects(event.text);
+            // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
+            for (const eventName of eventNames) {
+              // get event by eventName
+              // exit on the most likely match
+              // I don't know if this for loop is necessary, or if the getEventsByName returns many
+            }
+            web.chat.postMessage({ channel: channelId, text: "No events found!" });
           }
         });
       });
