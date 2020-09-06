@@ -43,7 +43,8 @@ const dateSelectBlocks = [
 
 // Convert result from google-calendar to posted messages
 function postEvents(postMessage, events) {
-  postMessage({text: events.map(r => `${r.summary}, at ${r.start.dateTime}   <${r.htmlLink}|Add to calendar>`).join('')});
+  console.log(events)
+  postMessage({text: events.map(r => `${r.summary}, at ${r.start.dateTime || r.start.date}   <${r.htmlLink}|Add to calendar>`).join('\n')});
 }
 
 let new_date = null;
@@ -98,7 +99,7 @@ function ask(text, postMessage) {
               } else {
                 console.log(events);
                 if (events.length) {
-                  postEvents(events);
+                  postEvents(postMessage, events);
                 } else {
                   postMessage({text: 'No events found for this date range.'});
                 }
@@ -112,7 +113,7 @@ function ask(text, postMessage) {
                   return;
                 }
                 if (events.length) {
-                  postEvents(events);
+                  postEvents(postMessage, events);
                 }
               });
             }
