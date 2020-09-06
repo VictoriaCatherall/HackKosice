@@ -59,14 +59,13 @@ slackInteractions.action({}, (payload, respond) => {
   }
 })
 
-
 function ask(text, postMessage) {
   faq.ask(text, (err, answer) => {
     if (err || !answer) {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
           postMessage({text: "Error loading client secret file."});
-          return console.log('Error loading client secret file:', err);
+          return console.error('Error loading client secret file:', err);
         }
         calendar.authorize(JSON.parse(content), (auth) => {
           const dates = chatbot.toJSDates(chatbot.getDates(text));
@@ -91,12 +90,11 @@ function ask(text, postMessage) {
               postMessage({text: "Too many dates! I don't know what to do."});
               return;
             }
-            console.log('looking for events between', start, end);
+            console.log(start, end);
             calendar.getEvents(auth, start, end, (err, events) => {
               if (err) {
                 console.error('BIG ERROR probaly with google calendar api', err);
               } else {
-                console.log(events);
                 if (events.length) {
                   postEvents(events);
                 } else {
@@ -105,6 +103,8 @@ function ask(text, postMessage) {
               }
             });
           } else if (eventNames.length) {
+            console.log(eventNames);
+            let found = false;
             for (const eventName of eventNames) {
               calendar.getEventsByName(auth, eventName, (err, events) => {
                 if (err) {
@@ -113,8 +113,12 @@ function ask(text, postMessage) {
                 }
                 if (events.length) {
                   postEvents(events);
+                  found = true;
                 }
               });
+            }
+            if (!found) {
+              postMessage({text: 'No events found'});
             }
           } else {
             postMessage({text: 'What are you trying to do ....'});
