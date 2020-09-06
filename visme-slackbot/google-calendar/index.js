@@ -7,7 +7,7 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = '../token.json';
+const TOKEN_PATH = './token.json';
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -101,6 +101,7 @@ function getEventsByName(auth, name, callback) {
       console.error('Google Calendar error:', err);
       return callback(err);
     }
+    console.log(res);
     const events = res.data.items;
     callback(null, events);
   });
