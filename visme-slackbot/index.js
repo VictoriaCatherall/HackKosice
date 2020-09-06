@@ -87,13 +87,13 @@ function ask(text, callback) {
             if (dates.length == 1) {
               check_validity(dates[0], channelId, "", (d) => {
                 let day = chatbot.dayBounds(d);
-                calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
+                calendar.getEvents(auth, day[0], day[1], r => process_result(callback, r));
               });
 
             } else if (dates.length == 2) {
               check_validity(dates[0], channelId, "first ", (d0) =>
                 check_validity(dates[1], channelId, "second ", (d1) =>
-                  calendar.getEvents(auth, d0, d1, r => process_result(channelId, r)))
+                  calendar.getEvents(auth, d0, d1, r => process_result(callback, r)))
               );
             } else {
               callback("Too many dates! I don't know what to do.");
@@ -101,7 +101,7 @@ function ask(text, callback) {
           } else {
             const eventNames = chatbot.getSubjects(text);
             // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
-            calendar.getEventsByName(auth, eventNames[0], result => process_result(channelId, result));
+            calendar.getEventsByName(auth, eventNames[0], result => process_result(callback, result));
           }
         });
       });
