@@ -96,6 +96,7 @@ function ask(text, postMessage) {
               if (err) {
                 console.error('BIG ERROR probaly with google calendar api', err);
               } else {
+                console.log(events);
                 if (events.length) {
                   postEvents(events);
                 } else {

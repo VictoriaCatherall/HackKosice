@@ -101,7 +101,7 @@ function getEventsByName(auth, name, callback) {
       return callback(err);
     }
     const events = res.data.items;
-    return callback(null, events);
+    callback(null, events);
   });
 }
 
@@ -125,7 +125,7 @@ function getEvents(auth, from, to, callback) {
       return callback(err);
     }
     const events = res.data.items;
-    return callback(null, events);
+    callback(null, events);
   });
 }
 
