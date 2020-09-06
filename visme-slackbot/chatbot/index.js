@@ -31,6 +31,18 @@ function getSubjects(text) {
   flatTerms.sort((a, b) => a.offset.start - b.offset.start);
 
   const nounPhrases = [];
+  flatTerms.forEach((term, i, arr) => {
+    if (i == 0) {
+      nounPhrases.push(term.text);
+    } else {
+      const previousTerm = arr[i - 1];
+      if (previousTerm.offset.start + previousTerm.offset.length + previousTerm.post.length == term.offset.start) {
+        nounPhrases[nounPhrases.length - 1] += previousTerm.post + term.text;
+      } else {
+        nounPhrases.push(term.text);
+      }
+    }
+  });
   return nounPhrases;
 }
 
