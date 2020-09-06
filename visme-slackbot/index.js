@@ -24,7 +24,7 @@ app.use(express.json());
 app.use('/webhook', require('./webhook')(ask));
 
 // Convert result from google-calendar to posted messages
-function process_result(callback, result) {
+function processResult(callback, result) {
   if (result.valid) {
     callback(result.data.map(r => `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>`).join(''));
   } else {
@@ -87,13 +87,13 @@ function ask(text, callback) {
             if (dates.length == 1) {
               check_validity(dates[0], channelId, "", (d) => {
                 let day = chatbot.dayBounds(d);
-                calendar.getEvents(auth, day[0], day[1], r => process_result(callback, r));
+                calendar.getEvents(auth, day[0], day[1], r => processResult(callback, r));
               });
 
             } else if (dates.length == 2) {
               check_validity(dates[0], channelId, "first ", (d0) =>
                 check_validity(dates[1], channelId, "second ", (d1) =>
-                  calendar.getEvents(auth, d0, d1, r => process_result(callback, r)))
+                  calendar.getEvents(auth, d0, d1, r => processResult(callback, r)))
               );
             } else {
               callback("Too many dates! I don't know what to do.");
@@ -101,7 +101,7 @@ function ask(text, callback) {
           } else {
             const eventNames = chatbot.getSubjects(text);
             // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
-            calendar.getEventsByName(auth, eventNames[0], result => process_result(callback, result));
+            calendar.getEventsByName(auth, eventNames[0], result => processResult(callback, result));
           }
         });
       });
