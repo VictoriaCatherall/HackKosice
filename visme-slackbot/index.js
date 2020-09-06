@@ -27,7 +27,7 @@ const dateSelectBlocks = [
     "type": "section",
     "text": {
       "type": "plain_text",
-      "text": "Date not recognised. Please select it from this calendar:"
+      "text": "Sorry, I didn't get the day. Please could you select it from this calendar:"
     },
     "accessory": {
       "type": "datepicker",
@@ -47,7 +47,6 @@ function formatEvents(events) {
 
 fs.readFile('./credentials.json', (err, content) => {
   if (err) {
-    postMessage({text: "Error loading client secret file."});
     return console.error('Error loading client secret file:', err);
   }
   calendar.authorize(JSON.parse(content), (auth) => {
@@ -87,20 +86,21 @@ fs.readFile('./credentials.json', (err, content) => {
             let start, end;
             if (dates.length == 1) {
               if (isNaN(dates[0].getTime())) {
-                postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
+                postMessage({text: "Couldn't understand the date...", blocks: dateSelectBlocks});
                 return;
               } else {
                 [start, end] = chatbot.dayBounds(dates[0]);
               }
             } else if (dates.length == 2) {
               if (isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
-                postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
+                postMessage({text: "Couldn't understand the date...", blocks: dateSelectBlocks});
                 return;
               } else {
                 [start, end] = dates;
               }
             } else {
-              postMessage({text: "Too many dates! I don't know what to do."});
+              postMessage({text: "Too many dates! I don't know what to do with all of them, sorry. Please try another phrasing."});
+              console.error('too many dates', dates);
               return;
             }
             console.log(start, end);
@@ -131,10 +131,10 @@ fs.readFile('./credentials.json', (err, content) => {
               });
             }
             if (!found) {
-              postMessage({text: 'No events found'});
+              postMessage({text: 'No events found for that name'});
             }
           } else {
-            postMessage({text: 'What are you trying to do ....'});
+            postMessage({text: "I don't quite understand what you mean... could you try asking with a different phrasing?"});
           }
         } else {
           postMessage({mrkdwn: true, text: answer.answer});
