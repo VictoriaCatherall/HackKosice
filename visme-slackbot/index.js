@@ -104,7 +104,7 @@ slackEvents.on('message', (event) => {
         });
       });
     } else {
-      web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
+      web.chat.postMessage({ channel: channelId, mrkdwn:true, text: answer.score + answer.answer });
     }
   });
 });
