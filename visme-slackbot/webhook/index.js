@@ -1,6 +1,5 @@
 module.exports = (ask) => {
   return (req, res, next) => {
-    console.log('incoming webhook');
     var clump = req.body;
     var question = clump["intent"]["query"];
     console.log(`Got webhook question ${question}`);
