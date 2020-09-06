@@ -101,7 +101,6 @@ function getEventsByName(auth, name, callback) {
       console.error('Google Calendar error:', err);
       return callback(err);
     }
-    console.log(res);
     const events = res.data.items;
     callback(null, events);
   });
