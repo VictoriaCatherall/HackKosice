@@ -82,7 +82,8 @@ module.exports = {
   getVerbs,
   getDates,
   toJSDates,
-  dayBounds
+  dayBounds,
+  getSubjects
 };
 
 if (require.main == module) {
