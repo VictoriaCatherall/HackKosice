@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@slack/events-api": "^2.3.4",
+    "@slack/interactive-messages": "^1.7.0",
     "@slack/web-api": "^5.11.0",
     "chrono-node": "^2.1.8",
     "compromise": "^13.3.2",

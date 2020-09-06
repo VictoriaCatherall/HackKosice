@@ -9,6 +9,7 @@ const app = require('express')();
 const fs = require('fs');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
+const { createMessageAdapter } = require('@slack/interactive-messages');
 
 const chatbot = require('./chatbot');
 const calendar = require('./google-calendar')
@@ -16,11 +17,13 @@ const faq = require('./faq');
 
 const slackSigningSecret = process.env.SLACK_SIGNING_SECRET;
 const slackEvents = createEventAdapter(slackSigningSecret);
+const slackInteractions = createMessageAdapter(slackSigningSecret);
 const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 app.use('/slack/events', slackEvents.expressMiddleware());
 app.use('/webhook', require('./webhook'));
+app.use('/slack/actions', slackInteractions.requestListener());
 
 // Convert result from google-calendar to posted messages
 function process_result(channelId, result) {
@@ -36,19 +39,22 @@ function process_result(channelId, result) {
   }
 }
 
-function check_validity(date, channelId) {
+let new_date = null;
+function check_validity(date, channelId, text, callback) {
   if (isNaN(date.getTime())) {
+    new_date = callback;
     // date is not valid
     web.chat.postMessage({
       channel: channelId,
       blocks: [{
         "type": "section",
         "text": {
-          "type": "mrkdwn",
-          "text": "Date not recognised. Please select it here:"
+          "type": "plain_text",
+          "text": text + "date not recognised. please select it from this calendar:"
         },
         "accessory": {
           "type": "datepicker",
+          "action_id": "datepickeraction",
           "placeholder": {
             "type": "plain_text",
             "text": "Select a date",
@@ -56,8 +62,23 @@ function check_validity(date, channelId) {
         }
       }]
     });
+  } else {
+    return callback(date)
   }
 }
+
+// listen for datepicker changing
+slackInteractions.action({}, (payload, respond) => {
+  const a = payload.actions[0]
+  respond({text: "Processing with date " + a.selected_date});
+  if (payload.type == "block_actions" && a.action_id == "datepickeraction") {
+    new_date(a.selected_date);
+    new_date = null;
+  } else {
+    web.chat.postMessage({channel: payload.channel.id, text: "Something updated..?"});
+  }
+})
+
 
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
@@ -85,31 +106,28 @@ slackEvents.on('message', (event) => {
           const dates = chatbot.toJSDates(chatbot.getDates(event.text));
           if (dates.length) {
             if (dates.length == 1) {
+              check_validity(dates[0], channelId, "", (d) => {
+                let day = chatbot.dayBounds(d);
+                calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
+              });
 
-              check_validity(dates[0], channelId);
-              console.log("returned");
-
-//               let day = chatbot.dayBounds(dates[0]);
-//               calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
             } else if (dates.length == 2) {
-              calendar.getEvents(auth, dates[0], dates[1], r => process_result(channelId, r));
+              check_validity(dates[0], channelId, "first ", (d0) =>
+                check_validity(dates[1], channelId, "second ", (d1) =>
+                  calendar.getEvents(auth, d0, d1, r => process_result(channelId, r)))
+              );
             } else {
               web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
             }
           } else {
             const eventNames = chatbot.getSubjects(event.text);
             // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
-            for (const eventName of eventNames) {
-              // get event by eventName
-              // exit on the most likely match
-              // I don't know if this for loop is necessary, or if the getEventsByName returns many
-            }
-            web.chat.postMessage({ channel: channelId, text: "No events found!" });
+            calendar.getEventsByName(auth, eventNames[0], result => process_result(channelId, result));
           }
         });
       });
     } else {
-      web.chat.postMessage({ channel: channelId, mrkdwn:true, text: answer.score + answer.answer });
+      web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
     }
   });
 });

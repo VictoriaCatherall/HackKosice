@@ -76,14 +76,12 @@ function listEvents(auth) {
     const events = res.data.items;
     if (events.length) {
       console.log('Upcoming 10 events:');
-      events.map(printEvent);
+      events.map(returnEvent);
     } else {
       console.log('No upcoming events found.');
     }
   });
 }
-
-
 
 
 /**
