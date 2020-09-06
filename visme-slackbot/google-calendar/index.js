@@ -76,7 +76,7 @@ function listEvents(auth) {
     const events = res.data.items;
     if (events.length) {
       console.log('Upcoming 10 events:');
-      events.map(returnEvent);
+      console.log(events.map(e => e.summary));
     } else {
       console.log('No upcoming events found.');
     }
@@ -136,4 +136,3 @@ module.exports = {
   getEvents,
   authorize
 };
-
