@@ -78,6 +78,7 @@ fs.readFile('./credentials.json', (err, content) => {
     });
 
     function ask(text, postMessage) {
+      if (text == 'hi') return postMessage({text: "Hi there, how may I help?"});
       faq.ask(text, (err, answer) => {
         if (err || !answer) {
           const dates = chatbot.toJSDates(chatbot.getDates(text));
@@ -155,13 +156,19 @@ fs.readFile('./credentials.json', (err, content) => {
       {
         return;
       }
-      console.log(`message.im: ${event.text}`);
+      if (Math.abs(Number(event.ts) - Date.now()/1000) > 4)
+      {
+        console.log('too far away', Math.abs(Number(event.ts) - Date.now()/1000));
+        return;
+      }
+      console.log(`message.im: ${event.text} ${event.channel}`);
       const channelId = event.channel;
       ask(event.text, answer => web.chat.postMessage({ ...answer, channel: channelId }));
     });
 
     app.use('/webhook', require('./webhook')(ask));
     app.listen(port);
+    web.chat.postMessage({ text: 'Welcome to VisMe Virtual Assistant!', channel: 'D01AJ2CCFNV' })
     console.log(`Listening for events on ${port}`);
   });
 });
