@@ -78,7 +78,7 @@ function ask(text, postMessage) {
                 postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
                 return;
               } else {
-                [start, end] = chatbot.dayBounds(d);
+                [start, end] = chatbot.dayBounds(dates[0]);
               }
             } else if (dates.length == 2) {
               if (isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
