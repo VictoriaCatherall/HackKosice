@@ -23,7 +23,12 @@ function ask(question, callback) {
       body += d;
     });
     res.on('end', () => {
-      callback(null, JSON.parse(body).answers[0]);
+      const answer = JSON.parse(body).answers[0];
+      if (answer.answer == 'No good match found in KB.' || answer.score < threshold) {
+        callback(new Error('You must find the answer within yourself'));
+      } else {
+        callback(null, answer);
+      }
     });
   });
 
