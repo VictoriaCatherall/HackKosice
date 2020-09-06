@@ -42,19 +42,19 @@ const dateSelectBlocks = [
 ];
 
 // Convert result from google-calendar to posted messages
-function postEvents(callback, events) {
-  callback({text: events.map(r => `${r.summary}, at ${r.start.dateTime}   <${r.htmlLink}|Add to calendar>`).join('')});
+function postEvents(postMessage, events) {
+  postMessage({text: events.map(r => `${r.summary}, at ${r.start.dateTime}   <${r.htmlLink}|Add to calendar>`).join('')});
 }
 
-function getEventsOutputHandler(callback) {
+function getEventsOutputHandler(postMessage) {
   return (err, events) => {
     if (err) {
-      callback({text: 'BIG ERROR probaly with google calendar api'});
+      postMessage({text: 'BIG ERROR probaly with google calendar api'});
     } else {
       if (events.length) {
         postEvents(events);
       } else {
-        callback({text: 'No events found for this date range.'});
+        postMessage({text: 'No events found for this date range.'});
       }
     }
   };
@@ -74,12 +74,12 @@ slackInteractions.action({}, (payload, respond) => {
 })
 
 
-function ask(text, callback) {
+function ask(text, postMessage) {
   faq.ask(text, (err, answer) => {
     if (err || !answer) {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
-          callback({text: "Error loading client secret file."});
+          postMessage({text: "Error loading client secret file."});
           return console.log('Error loading client secret file:', err);
         }
         calendar.authorize(JSON.parse(content), (auth) => {
@@ -87,29 +87,28 @@ function ask(text, callback) {
           if (dates.length) {
             if (dates.length == 1) {
               if (isNaN(dates[0].getTime())) {
-                callback({text: 'Date not recognised', blocks: dateSelectBlocks});
+                postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
               } else {
                 let day = chatbot.dayBounds(d);
-                calendar.getEvents(auth, day[0], day[1], getEventsOutputHandler(callback));
+                calendar.getEvents(auth, day[0], day[1], getEventsOutputHandler(postMessage));
               }
             } else if (dates.length == 2) {
               if (isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
-                callback({text: 'Date not recognised', blocks: dateSelectBlocks});
+                postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
               } else {
-                calendar.getEvents(auth, dates[0], dates[1], getEventsOutputHandler(callback));
+                calendar.getEvents(auth, dates[0], dates[1], getEventsOutputHandler(postMessage));
               }
             } else {
-              callback({text: "Too many dates! I don't know what to do."});
+              postMessage({text: "Too many dates! I don't know what to do."});
             }
           } else {
             const eventNames = chatbot.getSubjects(text);
-            // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
-            calendar.getEventsByName(auth, eventNames[0], getEventsOutputHandler(callback));
+            calendar.getEventsByName(auth, eventNames[0], getEventsOutputHandler(postMessage));
           }
         });
       });
     } else {
-      callback(answer.answer);
+      postMessage({mrkdwn: true, text: answer.answer});
     }
   });
 }
