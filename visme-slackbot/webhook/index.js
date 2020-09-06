@@ -1,23 +1,22 @@
-module.exports = (ask) => {
-  return (req, res, next) => {
-    console.log('incoming webhook');
-    var clump = req.body;
-    var question = clump["intent"]["query"];
-    console.log(`Got webhook question ${question}`);
-    ask(question, function (answer) {
-      console.log(`Answering webhook with ${answer}`);
-      res.status(200);
-      var msg = {
-        'prompt': {
-          'override': true,
-          'firstSimple': {
-            'speech': answer,
-            'text': answer
-          }
+module.exports = (req, res, next) => {
+  console.log('incoming webhook');
+  console.log(req.body);
+  var clump = JSON.parse(req.body);
+  var querrr = clump["intent"]["query"];
+  dummy(querrr, function (ans) {
+    res.status = 200;
+    ////////////
+    var msg = {
+      prompt: {
+        override: true,
+        firstSimple: {
+          speech: ans,
+          text: ans
         }
-      };
-      res.json(msg);
-      next();
-    });
-  };
+      }
+    }
+    res.send(msg);
+
+    next();
+  });
 };

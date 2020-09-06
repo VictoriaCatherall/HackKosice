@@ -1,7 +1,5 @@
 const https = require('https');
 
-const threshold = 50;
-
 function ask(question, callback) {
   const data = JSON.stringify({ question });
 
@@ -23,12 +21,7 @@ function ask(question, callback) {
       body += d;
     });
     res.on('end', () => {
-      const answer = JSON.parse(body).answers[0];
-      if (answer.answer == 'No good match found in KB.' || answer.score < threshold) {
-        callback(new Error('You must find the answer within yourself'));
-      } else {
-        callback(null, answer);
-      }
+      callback(null, JSON.parse(body).answers[0]);
     });
   });
 

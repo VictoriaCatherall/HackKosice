@@ -5,8 +5,7 @@
 // https://slack.dev/node-slack-sdk/events-api
 
 
-const express = require('express');
-const app = express();
+const app = require('express')();
 const fs = require('fs');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
@@ -23,16 +22,20 @@ const port = process.env.PORT || 3000;
 const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 app.use('/slack/events', slackEvents.expressMiddleware());
+app.use('/webhook', require('./webhook'));
 app.use('/slack/actions', slackInteractions.requestListener());
-app.use(express.json());
-app.use('/webhook', require('./webhook')(ask));
 
 // Convert result from google-calendar to posted messages
-function process_result(callback, result) {
+function process_result(channelId, result) {
   if (result.valid) {
-    callback(result.data.map(r => `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>`).join(''));
+    // ensure order with an async
+    (async () => {
+      await web.chat.postMessage({ channel: channelId, text: "Here are the results: " });
+      result.data.map((r) => web.chat.postMessage({ channel: channelId, text: `${r.title}, at ${r.start}   <${r.url}|[Calendar Link]>` }));
+      //                               change this for better results in slack ^  you have 'start', 'title', 'url'
+    })();
   } else {
-    callback(result.data);
+    web.chat.postMessage({ channel: channelId, text: result.data });
   }
 }
 
@@ -93,14 +96,14 @@ slackEvents.on('message', (event) => {
   console.log(`message.im: ${event.text}`);
   faq.ask(event.text, (err, answer) => {
     const channelId = event.channel;
-    if (err || !answer) {
+    if (err || answer.answer == 'No good match found in KB.') {
       fs.readFile('./credentials.json', (err, content) => {
         if (err) {
-          callback("Error loading client secret file.");
+          web.chat.postMessage({ channel: channelId, text: "Error loading client secret file."});
           return console.log('Error loading client secret file:', err);
         }
         calendar.authorize(JSON.parse(content), (auth) => {
-          const dates = chatbot.toJSDates(chatbot.getDates(text));
+          const dates = chatbot.toJSDates(chatbot.getDates(event.text));
           if (dates.length) {
             if (dates.length == 1) {
               check_validity(dates[0], channelId, "", (d) => {
@@ -114,10 +117,10 @@ slackEvents.on('message', (event) => {
                   calendar.getEvents(auth, d0, d1, r => process_result(channelId, r)))
               );
             } else {
-              callback("Too many dates! I don't know what to do.");
+              web.chat.postMessage({ channel: channelId, text: "Too many dates! I don't know what to do." });
             }
           } else {
-            const eventNames = chatbot.getSubjects(text);
+            const eventNames = chatbot.getSubjects(event.text);
             // ^^ returns [ 'Visma traditional breakfast', 'Yoga session' ]
             calendar.getEventsByName(auth, eventNames[0], result => process_result(channelId, result));
           }
@@ -127,24 +130,6 @@ slackEvents.on('message', (event) => {
       web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
     }
   });
-}
-
-// Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
-slackEvents.on('message', (event) => {
-  if (event.channel_type != 'im') {
-    return;
-  }
-  if (typeof event.bot_id != 'undefined' || typeof event.text == 'undefined')
-  {
-    return;
-  }
-  if (typeof event.text.length == 0)
-  {
-    return;
-  }
-  console.log(`message.im: ${event.text}`);
-  const channelId = event.channel;
-  ask(event.text, answer => web.chat.postMessage({ channel: channelId, text: answer }));
 });
 
 app.listen(port);
