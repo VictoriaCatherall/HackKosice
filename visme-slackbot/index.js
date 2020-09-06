@@ -42,21 +42,28 @@ const dateSelectBlocks = [
 ];
 
 // Convert result from google-calendar to posted messages
-function postEvents(postMessage, events) {
-  console.log(events)
-  postMessage({text: events.map(r => `${r.summary}, at ${r.start.dateTime || r.start.date}   <${r.htmlLink}|Add to calendar>`).join('\n')});
+function formatEvents(events) {
+  return events.map(r => `${r.summary}, at ${r.start.dateTime || r.start.date}   <${r.htmlLink}|Add to calendar>`).join('\n');
 }
 
-let new_date = null;
 // listen for datepicker changing
 slackInteractions.action({}, (payload, respond) => {
-  const a = payload.actions[0]
-  respond({text: "Processing with date " + a.selected_date});
-  if (payload.type == "block_actions" && a.action_id == "datepickeraction") {
-    new_date(a.selected_date);
-    new_date = null;
+  const action = payload.actions[0];
+  if (payload.type == "block_actions" && action.action_id == "datepickeraction") {
+    const [from, to] = chatbot.dayBounds(action.selected_date);
+    getEvents(auth, from, to, (err, events) => {
+      if (err) {
+        console.error('Error in the calendar', err);
+      } else {
+        if (events.length) {
+          respond({text: formatEvents(events)});
+        } else {
+          respond({text: 'No events found for this date range.'});
+        }
+      }
+    });
   } else {
-    web.chat.postMessage({channel: payload.channel.id, text: "Something updated..?"});
+    console.error("Something updated..?");
   }
 })
 
@@ -97,7 +104,7 @@ function ask(text, postMessage) {
                 console.error('BIG ERROR probaly with google calendar api', err);
               } else {
                 if (events.length) {
-                  postEvents(postMessage, events);
+                  postMessage({text: formatEvents(events)});
                 } else {
                   postMessage({text: 'No events found for this date range.'});
                 }
@@ -113,7 +120,7 @@ function ask(text, postMessage) {
                   return;
                 }
                 if (events.length) {
-                  postEvents(postMessage, events);
+                  postMessage({text: formatEvents(events)});
                   found = true;
                 }
               });
