@@ -35,6 +35,29 @@ function process_result(channelId, result) {
   }
 }
 
+function check_validity(date, channelId) {
+  if (isNaN(date.getTime())) {
+    // date is not valid
+    web.chat.postMessage({
+      channel: channelId,
+      blocks: [{
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Date not recognised. Please select it here:"
+        },
+        "accessory": {
+          "type": "datepicker",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Select a date",
+          }
+        }
+      }]
+    });
+  }
+}
+
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
   if (event.channel_type != 'im') {
@@ -61,8 +84,12 @@ slackEvents.on('message', (event) => {
           const dates = chatbot.toJSDates(chatbot.getDates(event.text));
           if (dates.length) {
             if (dates.length == 1) {
-              let day = chatbot.dayBounds(dates[0]);
-              calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
+
+              check_validity(dates[0], channelId);
+              console.log("returned");
+
+//               let day = chatbot.dayBounds(dates[0]);
+//               calendar.getEvents(auth, day[0], day[1], r => process_result(channelId, r));
             } else if (dates.length == 2) {
               calendar.getEvents(auth, dates[0], dates[1], r => process_result(channelId, r));
             } else {
