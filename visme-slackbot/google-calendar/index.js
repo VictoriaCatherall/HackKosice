@@ -93,6 +93,7 @@ function getEventsByName(auth, name, callback) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
+    singleEvents: true,
     q: name,
     maxResults: 10,
   }, (err, res) => {
@@ -115,6 +116,7 @@ function getEvents(auth, from, to, callback) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
+    singleEvents: true,
     timeMin: from.toISOString(),
     timeMax: to.toISOString(),
     maxResults: 10,
