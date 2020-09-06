@@ -127,7 +127,7 @@ slackEvents.on('message', (event) => {
       web.chat.postMessage({ channel: channelId, text: answer.score + answer.answer });
     }
   });
-}
+});
 
 // Attach listeners to events by Slack Event "type". See: https://api.slack.com/events/message.im
 slackEvents.on('message', (event) => {
