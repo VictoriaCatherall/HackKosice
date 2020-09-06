@@ -46,20 +46,6 @@ function postEvents(postMessage, events) {
   postMessage({text: events.map(r => `${r.summary}, at ${r.start.dateTime}   <${r.htmlLink}|Add to calendar>`).join('')});
 }
 
-function getEventsOutputHandler(postMessage) {
-  return (err, events) => {
-    if (err) {
-      postMessage({text: 'BIG ERROR probaly with google calendar api'});
-    } else {
-      if (events.length) {
-        postEvents(events);
-      } else {
-        postMessage({text: 'No events found for this date range.'});
-      }
-    }
-  };
-}
-
 let new_date = null;
 // listen for datepicker changing
 slackInteractions.action({}, (payload, respond) => {
@@ -84,26 +70,53 @@ function ask(text, postMessage) {
         }
         calendar.authorize(JSON.parse(content), (auth) => {
           const dates = chatbot.toJSDates(chatbot.getDates(text));
+          const eventNames = chatbot.getSubjects(text);
           if (dates.length) {
+            let start, end;
             if (dates.length == 1) {
               if (isNaN(dates[0].getTime())) {
                 postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
+                return;
               } else {
-                let day = chatbot.dayBounds(d);
-                calendar.getEvents(auth, day[0], day[1], getEventsOutputHandler(postMessage));
+                [start, end] = chatbot.dayBounds(d);
               }
             } else if (dates.length == 2) {
               if (isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
                 postMessage({text: 'Date not recognised', blocks: dateSelectBlocks});
+                return;
               } else {
-                calendar.getEvents(auth, dates[0], dates[1], getEventsOutputHandler(postMessage));
+                [start, end] = dates;
               }
             } else {
               postMessage({text: "Too many dates! I don't know what to do."});
+              return;
+            }
+            console.log('looking for events between', start, end);
+            calendar.getEvents(auth, start, end, (err, events) => {
+              if (err) {
+                console.error('BIG ERROR probaly with google calendar api', err);
+              } else {
+                if (events.length) {
+                  postEvents(events);
+                } else {
+                  postMessage({text: 'No events found for this date range.'});
+                }
+              }
+            });
+          } else if (eventNames.length) {
+            for (const eventName of eventNames) {
+              calendar.getEventsByName(auth, eventName, (err, events) => {
+                if (err) {
+                  console.error('Error with google calendar api', err);
+                  return;
+                }
+                if (events.length) {
+                  postEvents(events);
+                }
+              });
             }
           } else {
-            const eventNames = chatbot.getSubjects(text);
-            calendar.getEventsByName(auth, eventNames[0], getEventsOutputHandler(postMessage));
+            postMessage({text: 'What are you trying to do ....'});
           }
         });
       });
